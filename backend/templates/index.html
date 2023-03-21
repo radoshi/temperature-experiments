@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>🌡️ Experiments with Temperature 🌡️</title>
+  </head>
+  <body>
+    <h1>🌡️ Experiments with Temperature 🌡️</h1>
+    {% if error %}
+    <p style="color: red">{{ error }}</p>
+    {% endif %} {% if responses %}
+    <p>Responses:</p>
+    <ul>
+      {% for response in responses %}
+      <li>{{ response }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form
+      action="/"
+      method="post"
+    >
+      <label for="prompt">Prompt:</label>
+      <input
+        type="text"
+        id="prompt"
+        name="prompt"
+        required
+      />
+      <br /><br />
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>
