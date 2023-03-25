@@ -10,12 +10,14 @@ app = quart.Quart(__name__)
 # Get the OpenAI API key from an environment variable
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
-TEMPERATURES = [0.0, 0.5, 0.9]
+TEMPERATURES = [0.0, 0.5, 1.0, 1.5, 2.0]
 
 LLMS = [
     OpenAI(openai_api_key=OPENAI_API_KEY, temperature=temperature)
     for temperature in TEMPERATURES
 ]
+
+logging.basicConfig(level=logging.INFO)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -38,8 +40,10 @@ async def index():
 
 
 def get_single_response(llm, prompt):
-    logging.info(f"Generating response at temperature {llm.temperature}")
-    return llm(prompt)
+    logging.info(f"Temp: {llm.temperature}, Prompt: {prompt}")
+    response = llm(prompt)
+    logging.info(f"Temp: {llm.temperature}, Response: {response}")
+    return (llm.temperature, response)
 
 
 async def get_responses(prompt):
@@ -48,7 +52,7 @@ async def get_responses(prompt):
     )
 
 
-@app.route("/api")
+@app.route("/api", methods=["POST"])
 async def api():
     # receive arguments as a josn object
     args = await quart.request.json
@@ -59,16 +63,24 @@ async def api():
     # }
     prompt = args.get("prompt")
     if prompt is None:
-        return await quart.jsonify(
+        return quart.jsonify(
             {"status": "error", "message": "No prompt provided", "responses": []}
         )
 
     # Fetch 3 responses at different temperatures from OpenAi
     # and return them as a JSON object
-    responses = asyncio.run(get_responses(prompt))
+    responses = await get_responses(prompt)
 
     # return a json object
-    return await quart.jsonify({"status": "success", "responses": responses})
+    return quart.jsonify(
+        {
+            "status": "success",
+            "responses": [
+                {"temperature": temperature, "response": response}
+                for temperature, response in responses
+            ],
+        }
+    )
 
 
 if __name__ == "__main__":
