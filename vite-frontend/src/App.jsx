@@ -1,8 +1,11 @@
-import Head from 'next/head';
 import { useState } from 'react';
 
 function TabbedList({ responses }) {
   const [state, setState] = useState(0);
+
+  if (!responses) {
+    return <div></div>;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -24,59 +27,46 @@ function TabbedList({ responses }) {
   );
 }
 
-export default function Home() {
+export default function App() {
   const [prompt, setPrompt] = useState('');
-  const [responses, setResponses] = useState(['', '', '']);
+  const [responses, setResponses] = useState();
 
+  // const API = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/api' : '/api';
   const API = '/api';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(prompt);
-    fetch(API, {
+
+    setResponses([{ response: 'Loading...', temperature: '' }]);
+
+    const response = await fetch(API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({ prompt: prompt }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        if (data.status === 'success') {
-          console.log('success');
-          setResponses(data.responses);
-        } else {
-          console.log(`error: ${data.message}`);
-        }
-      });
+    });
+
+    const data = await response.json();
+    console.log(data);
+    if (data.status === 'success') {
+      console.log('success');
+      setResponses(data.responses);
+    } else {
+      console.log(`error: ${data.message}`);
+    }
   };
 
   return (
     <>
-      <Head>
-        <title>Temperature Experiments</title>
-        <meta
-          name="description"
-          content="Toy app to play with OpenAI temperature parameters"
-        />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-        />
-      </Head>
-
       <div className="min-h-screen bg-blue-100 flex justify-center">
-        <div className="max-w-md w-full flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-xxl w-full flex items-start justify-center pt-12 px-4 sm:px-6 lg:px-8">
           <div>
             <h1 className="text-4xl font-bold p-2 text-center">Temperature</h1>
             <p className="text-gray-500 p-2 mb-4 text-center">
-              Experiments with OpenAI&aposs GPT-3.5-turbo. Explore the same prompt at different
+              Experiments with OpenAI's GPT-3.5-turbo. Explore the same prompt at different
               temperature settings.
             </p>
             <form

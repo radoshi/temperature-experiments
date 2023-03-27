@@ -20,8 +20,13 @@ LLMS = [
 logging.basicConfig(level=logging.INFO)
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 async def index():
+    return await quart.send_from_directory("backend/static", "index.html")
+
+
+@app.route("/backup", methods=["GET", "POST"])
+async def backup():
     # return index.html from templates if this is a get request
     if quart.request.method == "GET":
         return await quart.render_template("index.html")
