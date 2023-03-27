@@ -1,3 +1,5 @@
+.DS_Store
+
 # don't check in the data directory.
 data/
 out/
